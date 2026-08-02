@@ -1,0 +1,107 @@
+# herdr-mcp
+
+A Model Context Protocol (MCP) server that exposes the **Herdr terminal API** as callable tools for AI agents.
+
+Herdr is a terminal workspace manager for AI coding agents. Its API is defined by a JSON Schema (JSON-RPC over a Unix socket). This MCP server reads that schema at startup and dynamically registers **every API method as an MCP tool**, so an agent can drive Herdr directly — split panes, read terminal output, manage workspaces/tabs, prompt agents, and more — using typed, easy-to-call tools instead of raw socket calls.
+
+## Features
+
+- **Auto-generated tools** — tools are built from the API schema, not hand-written. When the schema changes, the tool set updates automatically on the next server start.
+- **~90 tools** covering `workspace.*`, `tab.*`, `pane.*`, `agent.*`, `layout.*`, `plugin.*`, `events.*`, `integration.*`, and more.
+- **Dynamic schema export** — on startup the MCP runs `herdr api schema --output <mcp-dir>/schema.json` and caches the schema next to the server. If the export fails, it falls back to the cached copy.
+- **Dynamic socket discovery** — the Herdr socket path is resolved via `herdr status server --json` (override with the `HERDR_SOCK` env var).
+- **Zero-config** — no environment variables required.
+
+## How it works
+
+1. **Startup**: the server exports the current API schema from the running Herdr server (`herdr api schema`) and builds the tool definitions (name, description, input schema) from it.
+2. **Call**: when a tool is invoked, the server sends the corresponding JSON-RPC request over the Herdr Unix socket and returns the result.
+
+Tool naming follows `herdr_<method>` (dots become underscores), e.g. `herdr_pane_split`, `herdr_agent_prompt`, `herdr_workspace_list`.
+
+## Requirements
+
+- **Node.js 18+**
+- **Herdr** installed and running (the MCP talks to the Herdr server socket and uses the `herdr` CLI to export the schema and discover the socket). The `herdr` binary must be on `PATH` (or set `HERDR_BIN`).
+- **opencode** (to register the MCP server)
+
+## Installation in opencode
+
+1. Clone or copy the project to the target machine:
+
+   ```bash
+   git clone git@github.com:Twinber/herdr-mcp.git
+   cd herdr-mcp
+   npm install
+   ```
+
+2. Register the server in `~/.config/opencode/opencode.jsonc`:
+
+   ```jsonc
+   {
+     "$schema": "https://opencode.ai/config.json",
+     "mcp": {
+       "herdr": {
+         "type": "local",
+         "command": ["node", "/home/<YOUR_USER>/herdr-mcp/server.js"],
+         "enabled": true
+       }
+     }
+   }
+   ```
+
+   > Adjust the path in `command` to match where you cloned the repo.
+
+3. Restart opencode. The `herdr_*` tools will be available to agents (shown as `herdr_herdr_*`).
+
+## Configuration
+
+No environment variables are required, but these are honored when set:
+
+| Variable        | Purpose                                                        | Default                              |
+| --------------- | -------------------------------------------------------------- | ------------------------------------ |
+| `HERDR_SOCK`    | Override the Herdr server socket path                          | discovered via `herdr status server` |
+| `HERDR_SCHEMA`  | Use a static schema file instead of exporting it at startup    | exported to `<mcp-dir>/schema.json`  |
+| `HERDR_BIN`     | Path to the `herdr` binary                                     | `herdr`                              |
+
+### Using environment variables
+
+If you prefer explicit configuration, set them in the MCP entry:
+
+```jsonc
+"herdr": {
+  "type": "local",
+  "command": ["node", "/home/<YOUR_USER>/herdr-mcp/server.js"],
+  "enabled": true,
+  "environment": {
+    "HERDR_SOCK": "/home/<YOUR_USER>/.config/herdr/herdr.sock"
+  }
+}
+```
+
+## Development
+
+```bash
+npm test        # run the smoke test (initializes the MCP, lists tools, calls herdr_pane_list)
+npm start       # run the server directly (stdio transport)
+```
+
+The smoke test spawns the server over stdio, performs the MCP handshake, verifies `tools/list`, and makes a real `tools/call` against your running Herdr instance.
+
+## Project layout
+
+```
+herdr-mcp/
+├── server.js          # MCP server entry (stdio transport, tools/list + tools/call)
+├── src/
+│   ├── schema.js      # loads/exports the API schema and builds tool definitions
+│   └── client.js      # JSON-RPC client for the Herdr Unix socket
+├── test/
+│   └── smoke.js       # end-to-end smoke test
+├── schema.json        # generated cache of the exported schema (gitignored)
+└── package.json
+```
+
+## License
+
+MIT
