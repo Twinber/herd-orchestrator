@@ -49,15 +49,12 @@ These are non-obvious and will save you from the same bugs:
 - **`agent.start` can race the fresh pane.** Right after `worktree.create`,
   `agent.start` may fail with "pane X is not an available shell". Retry it up
   to 5 times with a few seconds between attempts before giving up.
-- **The opencode TUI ignores prompts sent too early.** The agent reports
-  `interactive_ready: true` long before its input channel actually works, and
-  an early prompt is silently lost (the agent stays at the welcome screen).
-  **Warm up first**: send `PING_REPLY_WITH_PONG` and only proceed once the
-  agent visibly responds with `PONG`. Two reliable signals:
-  1. `agent.read` (source `recent`, ~400 lines, `strip_ansi: true`) contains
-     "PONG". Do NOT read only 10 lines — the last few lines are TUI chrome.
-  2. `agent.get` shows `terminal_title` containing "PING_REPLY_WITH_PONG" AND
-     `agent_status` back to `idle`.
+- **The opencode TUI may swallow the first prompt.** The agent reports
+  `interactive_ready: true` before its input channel actually works. After
+  sending a prompt, use `agent.wait` with `until: ["working", "blocked"]` and
+  a 15-second timeout. If the agent never flips to `working`/`blocked`, the TUI
+  ate the prompt — re-send it (repeat up to 3 times before giving up). Do NOT
+  send PING/PONG warm-up messages; they clutter the terminal history.
 - **The agent status field is nested.** `agent.get` returns
   `{ type: "agent_info", agent: { ..., agent_status, terminal_title } }`.
   Read `agent.agent_status`, not a top-level field.
@@ -113,9 +110,14 @@ monitor them concurrently and handle each one as events arrive.
 - `worktree.create` with `{ branch, path, cwd }` — returns
   `{ workspace: { workspace_id }, root_pane: { pane_id }, worktree: { path } }`.
 - `agent.start` on `root_pane.pane_id` with `name = issue.id`, `kind = "opencode"`.
-  Retry on "not an available shell".
-- Warm up with the PONG ping until the input channel is live.
-- Send the worker prompt:
+  Retry on "not an available shell" up to 5 times with 5s pauses.
+- Wait for agent to reach `idle` (up to 30s).
+- Send the worker prompt (see template below).
+- Confirm it started: `agent.wait` with `until: ["working", "blocked"]` and a
+  15-second timeout. If it stays `idle`, the TUI ate the prompt — re-send it.
+  Repeat up to 3 times before marking the task as failed.
+
+Worker prompt template:
 
 ```
 Work in the current worktree on branch <branch>.
@@ -129,10 +131,6 @@ Rules:
 - Run the relevant tests/lint before finishing if the repo defines them.
 - When done, reply with a short summary and the exact line "TASK_COMPLETE".
 ```
-
-- **After sending the real prompt, confirm it started work**: the agent should
-  flip to `working` or `blocked` shortly. If it never does, the TUI ate the
-  prompt — re-send it.
 
 ### 2. Monitor (and unblock)
 - Poll `agent.get`. On `blocked`, read the tail of output, apply the policy,
@@ -161,7 +159,8 @@ Reply with EXACTLY one line:
 APPROVE or CHANGES_REQUESTED: <comma separated list>
 ```
 
-Warm up the reviewer (PONG ping) before the real prompt, same as the worker.
+Send the review prompt. Confirm it started (same strategy: `agent.wait` for
+`working`/`blocked` with 15s timeout, re-send up to 3 times).
 
 **Capturing the verdict:** After the reviewer finishes (`idle`/`done`), read its
 output with `agent.read`. If the output is truncated (review text is long),
