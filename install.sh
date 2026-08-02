@@ -17,7 +17,7 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "[install] herdr-mcp installer"
+echo "[install] herd-orchestrator installer"
 echo "[install] node: $(node --version)"
 
 cd "$SCRIPT_DIR"

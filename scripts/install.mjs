@@ -67,7 +67,7 @@ function readMcp(cfg) {
 // --- main -----------------------------------------------------------------
 
 const MODE_LABEL = FULL_MODE ? "full" : "orchestration";
-log(`herdr-mcp installer (project=${PROJECT}, mode=${MODE_LABEL})`);
+log(`herd-orchestrator installer (project=${PROJECT}, mode=${MODE_LABEL})`);
 
 if (!existsSync(COMMAND_SOURCE_DIR)) {
   err(`command source dir not found: ${COMMAND_SOURCE_DIR}`);
