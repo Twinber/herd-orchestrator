@@ -96,12 +96,12 @@ open PRs — reacting to what it observes instead of predicting states.
 Usage (from any opencode session with the herdr MCP connected):
 
 ```
-/orchestrate /path/to/factory/config.json
+/orchestrate /path/to/tasks/config.json
 /orchestrate <inline JSON>
 ```
 
 The config format and pipeline are documented in
-`commands/orchestrate.md`. Example configs live in `factory/`
+`commands/orchestrate.md`. Example configs live in `tasks/`
 (`config.example.json`, `test-1.json`, `test-blocked.json`).
 
 ## Planning with `/plan-worktrees`
@@ -118,7 +118,7 @@ overlapping files, no inter-task dependencies), and writes the factory JSON that
 
 It asks questions via the `question` tool until the repo details and the task
 decomposition are unambiguous, writes the config to
-`<repo>/factory/<date>-<slug>.json`, summarizes the plan, and hands off with
+`<repo>/tasks/<date>-<slug>.json`, summarizes the plan, and hands off with
 `/orchestrate <file>`.
 
 ## Project layout
@@ -141,7 +141,7 @@ herdr-mcp/
 ├── src/
 │   └── client.js           # JSON-RPC client for the Herdr Unix socket
 ├── commands/              # /orchestrate + /plan-worktrees commands
-├── factory/              # example configs for /orchestrate
+├── tasks/                # task configs for /orchestrate
 ├── test/
 │   └── smoke.js           # end-to-end smoke test
 └── package.json

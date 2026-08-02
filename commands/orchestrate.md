@@ -25,7 +25,7 @@ config shape is:
   "issues": [
     {
       "id": "task-1",
-      "branch": "factory/task-1",
+      "branch": "tasks/task-1",
       "title": "Task title",
       "prompt": "What the worker must implement.",
       "on_blocked": "continue",           // "continue" | { "answer": "..." } | "abort"
@@ -207,7 +207,7 @@ curl -sS -X POST https://api.github.com/repos/<gh_repo>/pulls \
   -H "Authorization: Bearer <token>" \
   -H "Accept: application/vnd.github+json" \
   -H "Content-Type: application/json" \
-  -d '{"title":"[factory] <title>","head":"<branch>","base":"<base>","body":"..."}'
+   -d '{"title":"[tasks] <title>","head":"<branch>","base":"<base>","body":"..."}'
 ```
 
 ### 6. Cleanup

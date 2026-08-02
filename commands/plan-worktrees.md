@@ -45,7 +45,7 @@ vague). If empty or vague, you interview them.
 Decompose the request into **independent tasks**. For each task produce:
 
 - `id` — short kebab-case slug (e.g. `station-search`).
-- `branch` — prefixed branch name, e.g. `factory/<id>`.
+- `branch` — prefixed branch name, e.g. `tasks/<id>` (use `tasks/` prefix, not `factory/`).
 - `title` — one line.
 - `prompt` — a complete, self-contained instruction for a worker agent that
   has NO context other than the repo at the worktree. Include:
@@ -75,9 +75,9 @@ Decompose the request into **independent tasks**. For each task produce:
 
 ## Output file
 
-Write the config to a file named `<repo.cwd>/factory/<date>-<slug>.json`, e.g.
-`/home/user/project/factory/2026-08-02-station-map.json`. Create the `factory/`
-directory if needed. If a `factory/` file already exists in that repo, use the
+Write the config to a file named `<repo.cwd>/tasks/<date>-<slug>.json`, e.g.
+`/home/user/project/tasks/2026-08-02-station-map.json`. Create the `tasks/`
+directory if needed. If a `tasks/` file already exists in that repo, use the
 next natural name.
 
 The exact JSON shape `/orchestrate` expects:
@@ -101,7 +101,7 @@ The exact JSON shape `/orchestrate` expects:
   "issues": [
     {
       "id": "task-a",
-      "branch": "factory/task-a",
+      "branch": "tasks/task-a",
       "title": "Short title",
       "prompt": "Complete, self-contained instructions for the worker.",
       "on_blocked": "continue",
