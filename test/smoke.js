@@ -72,6 +72,12 @@ try {
   results.toolCount = list.tools.length;
   results.sampleTool = list.tools.find((t) => t.name === "herdr_pane_split")?.inputSchema;
 
+  const tabClose = list.tools.find((t) => t.name === "herdr_tab_close");
+  results.tabCloseDescription = tabClose?.description;
+  results.tabCloseFieldDocs = Object.fromEntries(
+    Object.entries(tabClose?.inputSchema?.properties || {}).map(([k, v]) => [k, v.description])
+  );
+
   const paneList = await request("tools/call", {
     name: "herdr_pane_list",
     arguments: {},

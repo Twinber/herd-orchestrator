@@ -3,10 +3,22 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 
 import { loadSchema, fetchSchema, buildTools } from "./src/schema.js";
+import { checkDocCoverage } from "./src/docs.js";
 import { call, getSocketPath } from "./src/client.js";
 
 const { schema, source } = fetchSchema();
 const tools = buildTools(schema);
+
+const drift = checkDocCoverage(schema);
+if (drift.staleDocs.length || drift.staleFields.length || drift.missing.length) {
+  process.stderr.write(
+    `[herdr-mcp] docs drift: ${drift.missing.length} undocumented, ` +
+      `${drift.staleDocs.length} stale methods, ${drift.staleFields.length} stale fields\n` +
+      `  missing: ${drift.missing.join(", ") || "-"}\n` +
+      `  stale docs: ${drift.staleDocs.join(", ") || "-"}\n` +
+      `  stale fields: ${drift.staleFields.join(", ") || "-"}\n`
+  );
+}
 
 const server = new Server(
   {

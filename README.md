@@ -10,6 +10,7 @@ Herdr is a terminal workspace manager for AI coding agents. Its API is defined b
 - **~90 tools** covering `workspace.*`, `tab.*`, `pane.*`, `agent.*`, `layout.*`, `plugin.*`, `events.*`, `integration.*`, and more.
 - **Dynamic schema export** — on startup the MCP runs `herdr api schema --output <mcp-dir>/schema.json` and caches the schema next to the server. If the export fails, it falls back to the cached copy.
 - **Dynamic socket discovery** — the Herdr socket path is resolved automatically via `herdr status server --json`.
+- **Curated docs with drift detection** — every tool ships with hand-written descriptions of what it does and what its fields mean, while the *shape* (types, required args, enums) always comes from the live schema. If the schema outgrows the docs, the server warns about it on startup.
 - **Zero-config** — no environment variables or configuration required.
 
 ## How it works
@@ -18,6 +19,21 @@ Herdr is a terminal workspace manager for AI coding agents. Its API is defined b
 2. **Call**: when a tool is invoked, the server sends the corresponding JSON-RPC request over the Herdr Unix socket and returns the result.
 
 Tool naming follows `herdr_<method>` (dots become underscores), e.g. `herdr_pane_split`, `herdr_agent_prompt`, `herdr_workspace_list`.
+
+### Docs layer and schema drift
+
+Tool definitions come from two layers:
+
+- **Shape** (types, required args, enums, field names) is always derived from the **live exported schema** — it can never go stale.
+- **Prose** (what a method does, what a field means) comes from a curated map in `src/docs.js`.
+
+Because the prose is curated by hand while the schema is exported fresh, the two can drift when Herdr changes its API. On startup the server runs a coverage check (`checkDocCoverage` in `src/docs.js`) and logs a warning to stderr listing:
+
+- **undocumented** methods — present in the schema but without curated docs (they still work, using a generic fallback description);
+- **stale docs** — curated entries for methods that no longer exist in the schema;
+- **stale fields** — curated field docs for params that no longer exist on a method.
+
+Adding or fixing an entry in `src/docs.js` is the only maintenance needed when a warning appears. New methods keep working with the generic description until they are documented.
 
 ## Requirements
 
@@ -70,6 +86,7 @@ herdr-mcp/
 ├── server.js          # MCP server entry (stdio transport, tools/list + tools/call)
 ├── src/
 │   ├── schema.js      # loads/exports the API schema and builds tool definitions
+│   ├── docs.js        # curated docs layer + checkDocCoverage (drift detection)
 │   └── client.js      # JSON-RPC client for the Herdr Unix socket
 ├── test/
 │   └── smoke.js       # end-to-end smoke test

@@ -3,6 +3,8 @@ import { execFileSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import DOCS from "./docs.js";
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_CACHE_PATH = join(__dirname, "..", "schema.json");
 const HERDR_BIN = "herdr";
@@ -141,11 +143,18 @@ export function buildTools(schema) {
     }
 
     const required = Array.isArray(inputSchema.required) ? inputSchema.required : [];
-    const description =
-      `Herdr API method \`${method}\`. ` +
-      (required.length
-        ? `Required args: ${required.join(", ")}.`
-        : "No required args.");
+    const doc = DOCS[method];
+    let description = doc?.description ?? `Herdr API method \`${method}\`.`;
+    if (required.length) description += ` Required args: ${required.join(", ")}.`;
+
+    if (doc?.fields && inputSchema.properties) {
+      for (const [field, fieldDoc] of Object.entries(doc.fields)) {
+        const prop = inputSchema.properties[field];
+        if (prop && typeof prop === "object" && !Array.isArray(prop) && !prop.description) {
+          prop.description = typeof fieldDoc === "string" ? fieldDoc : fieldDoc.description;
+        }
+      }
+    }
 
     tools.push({
       method,
