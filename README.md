@@ -23,7 +23,7 @@ Tool naming follows `herdr_<method>` (dots become underscores), e.g. `herdr_pane
 ## Requirements
 
 - **Node.js 18+**
-- **Herdr** installed and running (the MCP talks to the Herdr server socket and uses the `herdr` CLI to export the schema and discover the socket). The `herdr` binary must be on `PATH`.
+- **Herdr** installed and running (the MCP talks to the Herdr server socket and discovers the socket path via `herdr status server --json`). The `herdr` binary must be on `PATH`.
 - **opencode** (to register the MCP server)
 
 ## Installation in opencode
@@ -52,7 +52,7 @@ into opencode's command directory — **without breaking any existing config**
 
    - `--dry-run` — show what would change without writing anything;
    - `--no-test` — skip the automatic `npm install` + smoke test;
-   - `--all` — expose all 89 herdr API tools (default: restricted to 19 orchestration tools).
+   - `--all` — expose all 89 herdr API tools (default: restricted to 20 orchestration tools).
 
    The installer is idempotent: re-running it leaves an already-registered
    `mcp.herdr` untouched, and it refuses to touch an unparseable config
@@ -143,7 +143,6 @@ herdr-mcp/
 ├── .opencode/
 │   └── command/           # /orchestrate + /plan-worktrees commands
 ├── factory/              # example configs for /orchestrate
-├── issues/               # issue reports and diagnostics
 ├── test/
 │   └── smoke.js           # end-to-end smoke test
 └── package.json
