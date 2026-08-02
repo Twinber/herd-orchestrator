@@ -8,7 +8,8 @@
   },
   "scripts": {
     "start": "node server.js",
-    "test": "node test/smoke.js"
+    "test": "node test/smoke.js",
+    "test:tools": "node --test test/tools/index.js"
   },
   "license": "MIT",
   "dependencies": {
