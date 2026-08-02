@@ -19,7 +19,9 @@
       "branch": "factory/example-1",
       "title": "Example task",
       "prompt": "Describe here what the worker agent should implement.",
-      "reviewer": "review-1"
+      "reviewer": "review-1",
+      "on_blocked": "continue",
+      "max_blocked": 5
     }
   ]
 }

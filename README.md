@@ -80,6 +80,24 @@ npm start       # run the server directly (stdio transport)
 
 The smoke test spawns the server over stdio, performs the MCP handshake, verifies `tools/list`, and makes a real `tools/call` against your running Herdr instance.
 
+## Multi-agent orchestration with `/orquestate`
+
+`/orquestate` is an opencode command that turns an opencode agent into a
+reactive orchestrator. It drives the herdr MCP tools to launch one opencode
+subagent per git worktree, monitor/unblock them, cross-review, merge, push and
+open PRs — reacting to what it observes instead of predicting states.
+
+Usage (from any opencode session with the herdr MCP connected):
+
+```
+/orquestate /path/to/factory/config.json
+/orquestate <inline JSON>
+```
+
+The config format and pipeline are documented in
+`.opencode/command/orquestate.md`. Example configs live in `factory/`
+(`config.example.json`, `test-1.json`, `test-blocked.json`).
+
 ## Project layout
 
 ```
@@ -89,6 +107,9 @@ herdr-mcp/
 │   ├── schema.js      # loads/exports the API schema and builds tool definitions
 │   ├── docs.js        # curated docs layer + checkDocCoverage (drift detection)
 │   └── client.js      # JSON-RPC client for the Herdr Unix socket
+├── .opencode/
+│   └── command/orquestate.md  # /orquestate orchestrator instructions
+├── factory/           # example configs consumed by /orquestate
 ├── test/
 │   └── smoke.js       # end-to-end smoke test
 ├── schema.json        # generated cache of the exported schema (gitignored)
