@@ -1,10 +1,19 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { createRequire } from "node:module";
 
 import { loadSchema, fetchSchema, buildTools } from "./src/schema.js";
 import { checkDocCoverage } from "./src/docs.js";
 import { call, getSocketPath } from "./src/client.js";
+
+const require = createRequire(import.meta.url);
+
+if (process.argv.includes("--version")) {
+  const pkg = require("./package.json");
+  process.stdout.write(`${pkg.version}\n`);
+  process.exit(0);
+}
 
 const { schema, source } = fetchSchema();
 const tools = buildTools(schema);
