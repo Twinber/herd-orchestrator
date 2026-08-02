@@ -1,40 +1,24 @@
 # herdr-mcp
 
-A Model Context Protocol (MCP) server that exposes the **Herdr terminal API** as callable tools for AI agents.
+A Model Context Protocol (MCP) server that exposes **20 hand-crafted tools** from the Herdr terminal API for AI agents — focused exclusively on multi-agent orchestration with git worktrees.
 
-Herdr is a terminal workspace manager for AI coding agents. Its API is defined by a JSON Schema (JSON-RPC over a Unix socket). This MCP server reads that schema at startup and dynamically registers **every API method as an MCP tool**, so an agent can drive Herdr directly — split panes, read terminal output, manage workspaces/tabs, prompt agents, and more — using typed, easy-to-call tools instead of raw socket calls.
+Each tool lives in its own file in `tools/`, with explicit input schemas, descriptions, and a direct JSON-RPC call to the Herdr Unix socket. No schema auto-generation, no magic.
 
 ## Features
 
-- **Auto-generated tools** — tools are built from the API schema, not hand-written. When the schema changes, the tool set updates automatically on the next server start.
-- **~90 tools** covering `workspace.*`, `tab.*`, `pane.*`, `agent.*`, `layout.*`, `plugin.*`, `events.*`, `integration.*`, and more.
-- **Dynamic schema export** — on startup the MCP runs `herdr api schema --output <mcp-dir>/schema.json` and caches the schema next to the server. If the export fails, it falls back to the cached copy.
-- **Dynamic socket discovery** — the Herdr socket path is resolved automatically via `herdr status server --json`.
-- **Curated docs with drift detection** — every tool ships with hand-written descriptions of what it does and what its fields mean, while the *shape* (types, required args, enums) always comes from the live schema. Destructive tools (`workspace.close`, `pane.close`, `server.stop`, ...) are flagged with a `WARNING:` prefix. If the schema outgrows the docs, the server warns about it on startup.
+- **20 curated tools** — only what's needed for worktree orchestration: `worktree.*`, `agent.*`, `pane.*`, `workspace.*`, `tab.*`, `ping`, `session.snapshot`. No noise from graphics, plugins, layout management, or reporting APIs.
+- **One file per tool** — each tool in `tools/<method>.js` exports `{ name, description, inputSchema, handler }`. Easy to read, test, and modify.
+- **WARNING prefix** on destructive tools (`worktree.remove`) to make the risk visible in the agent's tool list.
 - **Auto-timeouts** — calls are capped by a client-side timeout (30s by default), and blocking tools that accept `timeout_ms` are given enough headroom to complete instead of being cut short.
+- **Dynamic socket discovery** — the Herdr socket path is resolved automatically via `herdr status server --json`.
 - **Zero-config** — no environment variables or configuration required.
 
 ## How it works
 
-1. **Startup**: the server exports the current API schema from the running Herdr server (`herdr api schema`) and builds the tool definitions (name, description, input schema) from it.
+1. **Startup**: the server loads the 20 tool definitions from `tools/index.js`.
 2. **Call**: when a tool is invoked, the server sends the corresponding JSON-RPC request over the Herdr Unix socket and returns the result.
 
-Tool naming follows `herdr_<method>` (dots become underscores), e.g. `herdr_pane_split`, `herdr_agent_prompt`, `herdr_workspace_list`.
-
-### Docs layer and schema drift
-
-Tool definitions come from two layers:
-
-- **Shape** (types, required args, enums, field names) is always derived from the **live exported schema** — it can never go stale.
-- **Prose** (what a method does, what a field means) comes from a curated map in `src/docs.js`.
-
-Because the prose is curated by hand while the schema is exported fresh, the two can drift when Herdr changes its API. On startup the server runs a coverage check (`checkDocCoverage` in `src/docs.js`) and logs a warning to stderr listing:
-
-- **undocumented** methods — present in the schema but without curated docs (they still work, using a generic fallback description);
-- **stale docs** — curated entries for methods that no longer exist in the schema;
-- **stale fields** — curated field docs for params that no longer exist on a method.
-
-Adding or fixing an entry in `src/docs.js` is the only maintenance needed when a warning appears. New methods keep working with the generic description until they are documented.
+Tool naming follows `herdr_<method>` (dots become underscores), e.g. `herdr_pane_split`, `herdr_agent_prompt`, `herdr_worktree_create`.
 
 ## Requirements
 
@@ -141,20 +125,27 @@ decomposition are unambiguous, writes the config to
 
 ```
 herdr-mcp/
-├── server.js          # MCP server entry (stdio transport, tools/list + tools/call)
-├── install.sh         # installer entrypoint (detects node, delegates to scripts/install.mjs)
+├── server.js              # MCP entry (stdio transport, tools/list + tools/call)
+├── install.sh             # installer entrypoint
 ├── scripts/
-│   └── install.mjs    # installer: merges mcp.herdr into opencode config, copies /orquestate
+│   └── install.mjs        # merges mcp.herdr into opencode config, copies commands
+├── tools/
+│   ├── index.js            # collects all 20 tool definitions
+│   ├── ping.js
+│   ├── session.snapshot.js
+│   ├── workspace.list.js / workspace.get.js
+│   ├── tab.list.js / tab.get.js
+│   ├── pane.list.js / pane.get.js / pane.split.js / pane.send_input.js / pane.wait_for_output.js
+│   ├── agent.start.js / agent.prompt.js / agent.get.js / agent.wait.js / agent.read.js / agent.send_keys.js
+│   └── worktree.create.js / worktree.remove.js / worktree.list.js
 ├── src/
-│   ├── schema.js      # loads/exports the API schema and builds tool definitions
-│   ├── docs.js        # curated docs layer + checkDocCoverage (drift detection)
-│   └── client.js      # JSON-RPC client for the Herdr Unix socket
+│   └── client.js           # JSON-RPC client for the Herdr Unix socket
 ├── .opencode/
-│   └── command/          # /orquestate + /plan-worktrees orchestrator/planner commands
-├── factory/           # example configs consumed by /orquestate
+│   └── command/           # /orquestate + /plan-worktrees commands
+├── factory/              # example configs for /orquestate
+├── issues/               # issue reports and diagnostics
 ├── test/
-│   └── smoke.js       # end-to-end smoke test
-├── schema.json        # generated cache of the exported schema (gitignored)
+│   └── smoke.js           # end-to-end smoke test
 └── package.json
 ```
 

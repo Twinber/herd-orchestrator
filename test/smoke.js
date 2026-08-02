@@ -72,13 +72,9 @@ try {
   results.toolCount = list.tools.length;
   results.sampleTool = list.tools.find((t) => t.name === "herdr_pane_split")?.inputSchema;
 
-  const tabClose = list.tools.find((t) => t.name === "herdr_tab_close");
-  results.tabCloseDescription = tabClose?.description;
-  results.tabCloseFieldDocs = Object.fromEntries(
-    Object.entries(tabClose?.inputSchema?.properties || {}).map(([k, v]) => [k, v.description])
-  );
-  results.tabCloseHasWarning = /WARNING:/.test(tabClose?.description || "");
-  results.paneCloseStartsWarning = list.tools.find((t) => t.name === "herdr_pane_close")?.description.startsWith("WARNING:");
+  const worktreeRemove = list.tools.find((t) => t.name === "herdr_worktree_remove");
+  results.worktreeRemoveWarning = /WARNING:/.test(worktreeRemove?.description || "") ? "yes" : "no";
+  results.hasDestructiveWarning = list.tools.some((t) => /WARNING:/.test(t.description || ""));
   results.noSocketSuffix = list.tools.every((t) => !/Socket:/.test(t.description || ""));
 
   const paneList = await request("tools/call", {
