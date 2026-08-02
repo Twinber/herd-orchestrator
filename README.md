@@ -29,7 +29,7 @@ Tool naming follows `herdr_<method>` (dots become underscores), e.g. `herdr_pane
 ## Installation in opencode
 
 The included installer registers the MCP server in opencode's config and copies
-**all** commands from `.opencode/command/` (`/orquestate`, `/plan-worktrees`)
+**all** commands from `.opencode/command/` (`/orchestrate`, `/plan-worktrees`)
 into opencode's command directory — **without breaking any existing config**
 (comments, formatting and unrelated MCP servers are preserved).
 
@@ -58,7 +58,7 @@ into opencode's command directory — **without breaking any existing config**
    `mcp.herdr` untouched, and it refuses to touch an unparseable config
    (aborting with nothing changed).
 
-3. Restart opencode. The `herdr_*` tools will be available to agents (shown as `herdr_herdr_*`), and the `/orquestate` and `/plan-worktrees` commands will be available globally.
+3. Restart opencode. The `herdr_*` tools will be available to agents (shown as `herdr_herdr_*`), and the `/orchestrate` and `/plan-worktrees` commands will be available globally.
 
 ### Tool modes
 
@@ -86,9 +86,9 @@ npm start       # run the server directly (stdio transport)
 
 The smoke test spawns the server over stdio, performs the MCP handshake, verifies `tools/list`, and makes a real `tools/call` against your running Herdr instance.
 
-## Multi-agent orchestration with `/orquestate`
+## Multi-agent orchestration with `/orchestrate`
 
-`/orquestate` is an opencode command that turns an opencode agent into a
+`/orchestrate` is an opencode command that turns an opencode agent into a
 reactive orchestrator. It drives the herdr MCP tools to launch one opencode
 subagent per git worktree, monitor/unblock them, cross-review, merge, push and
 open PRs — reacting to what it observes instead of predicting states.
@@ -96,12 +96,12 @@ open PRs — reacting to what it observes instead of predicting states.
 Usage (from any opencode session with the herdr MCP connected):
 
 ```
-/orquestate /path/to/factory/config.json
-/orquestate <inline JSON>
+/orchestrate /path/to/factory/config.json
+/orchestrate <inline JSON>
 ```
 
 The config format and pipeline are documented in
-`.opencode/command/orquestate.md`. Example configs live in `factory/`
+`.opencode/command/orchestrate.md`. Example configs live in `factory/`
 (`config.example.json`, `test-1.json`, `test-blocked.json`).
 
 ## Planning with `/plan-worktrees`
@@ -109,7 +109,7 @@ The config format and pipeline are documented in
 `/plan-worktrees` is the companion planning command. It interviews you about a
 feature or fix you want, decomposes it into **parallelizable tasks** (non
 overlapping files, no inter-task dependencies), and writes the factory JSON that
-`/orquestate` consumes directly.
+`/orchestrate` consumes directly.
 
 ```
 /plan-worktrees  # then answer the interviewer's questions
@@ -119,7 +119,7 @@ overlapping files, no inter-task dependencies), and writes the factory JSON that
 It asks questions via the `question` tool until the repo details and the task
 decomposition are unambiguous, writes the config to
 `<repo>/factory/<date>-<slug>.json`, summarizes the plan, and hands off with
-`/orquestate <file>`.
+`/orchestrate <file>`.
 
 ## Project layout
 
@@ -141,8 +141,8 @@ herdr-mcp/
 ├── src/
 │   └── client.js           # JSON-RPC client for the Herdr Unix socket
 ├── .opencode/
-│   └── command/           # /orquestate + /plan-worktrees commands
-├── factory/              # example configs for /orquestate
+│   └── command/           # /orchestrate + /plan-worktrees commands
+├── factory/              # example configs for /orchestrate
 ├── issues/               # issue reports and diagnostics
 ├── test/
 │   └── smoke.js           # end-to-end smoke test

@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-// Installer for herdr-mcp: registers the MCP server and the /orquestate command
+// Installer for herdr-mcp: registers the MCP server and the /orchestrate command
 // in the user's global opencode config WITHOUT breaking existing settings.
 //
 // What it does:
 //   1. Merges the "herdr" MCP entry into ~/.config/opencode/opencode.json(c)
 //      (or project .opencode/opencode.json when --project is passed), keeping
 //      every other key intact.
-//   2. Copies .opencode/command/orquestate.md to the global command dir.
+//   2. Copies .opencode/command/orchestrate.md to the global command dir.
 //   3. Re-installs deps and runs the smoke test to validate.
 //
 // Flags:
@@ -118,7 +118,7 @@ if (raw) {
   else log(`creating ${configPath} with mcp.herdr`);
 }
 
-// 2. Command installation (copies every *.md command so /orquestate,
+// 2. Command installation (copies every *.md command so /orchestrate,
 //    /plan-worktrees, ... are all installed)
 const commandDir = join(configDir, "command");
 const commandSources = existsSync(COMMAND_SOURCE_DIR)
