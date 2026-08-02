@@ -26,6 +26,10 @@ export function fetchSchema() {
     };
   } catch (err) {
     try {
+      process.stderr.write(
+        `[herdr-mcp] warning: failed to export schema (${err.message}), ` +
+          `falling back to cached ${DEFAULT_CACHE_PATH}\n`
+      );
       return {
         schema: JSON.parse(readFileSync(DEFAULT_CACHE_PATH, "utf8")),
         source: `${DEFAULT_CACHE_PATH} (cached fallback)`,
