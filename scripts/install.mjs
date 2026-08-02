@@ -27,6 +27,7 @@ const args = process.argv.slice(2);
 const PROJECT = args.includes("--project");
 const DRY_RUN = args.includes("--dry-run");
 const NO_TEST = args.includes("--no-test");
+const FULL_MODE = args.includes("--all");
 
 const OPENCODE_GLOBAL_DIR = join(homedir(), ".config", "opencode");
 const OPENCODE_PROJECT_DIR = join(process.env.OPENCODE_PROJECT_CWD || process.cwd(), ".opencode");
@@ -65,7 +66,8 @@ function readMcp(cfg) {
 
 // --- main -----------------------------------------------------------------
 
-log(`herdr-mcp installer (project=${PROJECT})`);
+const MODE_LABEL = FULL_MODE ? "full" : "orchestration";
+log(`herdr-mcp installer (project=${PROJECT}, mode=${MODE_LABEL})`);
 
 if (!existsSync(COMMAND_SOURCE_DIR)) {
   err(`command source dir not found: ${COMMAND_SOURCE_DIR}`);
@@ -79,7 +81,9 @@ log(`opencode config: ${configPath} (${raw ? "exists" : "will be created"})`);
 
 // 1. MCP registration
 let nextConfig = raw ?? "";
-const mcpCommand = ["node", join(ROOT, "server.js")];
+const mcpCommand = FULL_MODE
+  ? ["node", join(ROOT, "server.js"), "--all"]
+  : ["node", join(ROOT, "server.js")];
 
 if (raw) {
   const tree = parseTree(raw);

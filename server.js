@@ -16,7 +16,35 @@ if (process.argv.includes("--version")) {
 }
 
 const { schema, source } = fetchSchema();
-const tools = buildTools(schema);
+const allTools = buildTools(schema);
+
+const ORCHESTRATION_TOOLS = new Set([
+  "ping",
+  "session.snapshot",
+  "workspace.list",
+  "workspace.get",
+  "tab.list",
+  "tab.get",
+  "pane.list",
+  "pane.get",
+  "pane.split",
+  "pane.send_input",
+  "pane.wait_for_output",
+  "agent.start",
+  "agent.prompt",
+  "agent.get",
+  "agent.wait",
+  "agent.read",
+  "agent.send_keys",
+  "worktree.create",
+  "worktree.remove",
+  "worktree.list",
+]);
+
+const fullMode = process.argv.includes("--all");
+const tools = fullMode
+  ? allTools
+  : allTools.filter((t) => ORCHESTRATION_TOOLS.has(t.method));
 
 const drift = checkDocCoverage(schema);
 if (drift.staleDocs.length || drift.staleFields.length || drift.missing.length) {
@@ -80,7 +108,7 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   process.stderr.write(
-    `[herdr-mcp] ready, ${tools.length} tools from schema protocol=${schema.protocol} (${source})\n`
+    `[herdr-mcp] ready, ${tools.length}/${allTools.length} tools (${fullMode ? "full" : "orchestration"} mode) protocol=${schema.protocol} (${source})\n`
   );
 }
 

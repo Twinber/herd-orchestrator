@@ -67,13 +67,31 @@ into opencode's command directory — **without breaking any existing config**
    Options:
 
    - `--dry-run` — show what would change without writing anything;
-   - `--no-test` — skip the automatic `npm install` + smoke test.
+   - `--no-test` — skip the automatic `npm install` + smoke test;
+   - `--all` — expose all 89 herdr API tools (default: restricted to 19 orchestration tools).
 
    The installer is idempotent: re-running it leaves an already-registered
    `mcp.herdr` untouched, and it refuses to touch an unparseable config
    (aborting with nothing changed).
 
 3. Restart opencode. The `herdr_*` tools will be available to agents (shown as `herdr_herdr_*`), and the `/orquestate` and `/plan-worktrees` commands will be available globally.
+
+### Tool modes
+
+By default the server exposes only the **20 tools** needed for worktree
+orchestration (`worktree.*`, `agent.*`, `pane.*` (split/send_input/
+wait_for_output/list/get), `workspace.*`, `tab.*`, `ping`, `session.snapshot`).
+Destructive or noisy tools (`workspace.close`, `tab.close`, `pane.close`,
+`server.stop`, graphics, plugins, layout, reporting, ...) are excluded.
+
+To expose **all 89 tools** (e.g. for full herdr API access), pass `--all` to the
+installer or to `server.js` directly:
+
+```bash
+./install.sh --all
+# or in opencode.jsonc:
+# "command": ["node", "/path/to/server.js", "--all"]
+```
 
 ## Development
 
