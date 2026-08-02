@@ -84,6 +84,26 @@ These are non-obvious and will save you from the same bugs:
   conversation. Do not reuse it for a different agent — split a new pane
   (`pane.split`) so each agent gets a clean context.
 
+## Critical rules (learned from failures)
+
+1. **NEVER stop or wait for user input.** Once the pipeline starts, drive it to
+   completion without pausing. Report progress but do NOT ask for confirmation.
+   If you finish a phase, immediately start the next one. If all tasks are done,
+   print the final summary and stop — do not wait for a reply.
+
+2. **Maximum parallelism.** Deploy EVERY issue that does not share files in
+   parallel on every round. Worktrees are created from the base branch (main),
+   so multiple workers CAN modify the same file independently — conflicts only
+   appear at merge time, and git's merge strategies handle them. Prefer running
+   3–5 workers concurrently per round to maximize throughput.
+
+3. **Verdict capture for long reviews.** After a reviewer finishes, if
+   `agent.read` cannot capture the full verdict (output truncated by terminal
+   buffer), prompt the reviewer agent to write the verdict to a temp file:
+   `echo "<APPROVE or CHANGES_REQUESTED: ...>" > /tmp/rev-<task>-verdict.txt`
+   Then read that file with bash (`cat /tmp/rev-<task>-verdict.txt`) to get the
+   exact verdict. Clean up the file after reading it.
+
 ## Pipeline
 
 For each issue, walk these phases. You may run multiple workers in parallel;
@@ -142,6 +162,13 @@ APPROVE or CHANGES_REQUESTED: <comma separated list>
 ```
 
 Warm up the reviewer (PONG ping) before the real prompt, same as the worker.
+
+**Capturing the verdict:** After the reviewer finishes (`idle`/`done`), read its
+output with `agent.read`. If the output is truncated (review text is long),
+instruct the reviewer to write the verdict to a file:
+`echo "<APPROVE or CHANGES_REQUESTED: ...>" > /tmp/rev-<task>-verdict.txt`
+Then `cat` that file from bash. Delete the file after reading. Determine
+APPROVE or CHANGES_REQUESTED from the captured line.
 
 **If the reviewer says CHANGES_REQUESTED**, do NOT merge yet. Enter the rework loop:
 
