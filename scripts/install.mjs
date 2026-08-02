@@ -14,7 +14,7 @@
 //   --dry-run   show what would change without writing
 //   --no-test   skip dependency install + smoke test
 
-import { mkdirSync, copyFileSync, existsSync, readFileSync, writeFileSync, statSync } from "node:fs";
+import { mkdirSync, copyFileSync, existsSync, readFileSync, writeFileSync, statSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -30,7 +30,7 @@ const NO_TEST = args.includes("--no-test");
 
 const OPENCODE_GLOBAL_DIR = join(homedir(), ".config", "opencode");
 const OPENCODE_PROJECT_DIR = join(process.env.OPENCODE_PROJECT_CWD || process.cwd(), ".opencode");
-const COMMAND_SOURCE = join(ROOT, ".opencode", "command", "orquestate.md");
+const COMMAND_SOURCE_DIR = join(ROOT, ".opencode", "command");
 
 // --- helpers -------------------------------------------------------------
 
@@ -67,8 +67,8 @@ function readMcp(cfg) {
 
 log(`herdr-mcp installer (project=${PROJECT})`);
 
-if (!existsSync(COMMAND_SOURCE)) {
-  err(`command source not found: ${COMMAND_SOURCE}`);
+if (!existsSync(COMMAND_SOURCE_DIR)) {
+  err(`command source dir not found: ${COMMAND_SOURCE_DIR}`);
 }
 
 const configDir = PROJECT ? OPENCODE_PROJECT_DIR : OPENCODE_GLOBAL_DIR;
@@ -114,17 +114,27 @@ if (raw) {
   else log(`creating ${configPath} with mcp.herdr`);
 }
 
-// 2. Command (skill) installation
+// 2. Command installation (copies every *.md command so /orquestate,
+//    /plan-worktrees, ... are all installed)
 const commandDir = join(configDir, "command");
-const commandTarget = join(commandDir, "orquestate.md");
-const commandInstalled = existsSync(commandTarget);
+const commandSources = existsSync(COMMAND_SOURCE_DIR)
+  ? readdirSync(COMMAND_SOURCE_DIR).filter((f) => f.endsWith(".md"))
+  : [];
 
-if (DRY_RUN) {
-  log(`[dry-run] would copy ${COMMAND_SOURCE} -> ${commandTarget}`);
-} else {
-  mkdirSync(commandDir, { recursive: true });
-  copyFileSync(COMMAND_SOURCE, commandTarget);
-  log(`installed command -> ${commandTarget}`);
+for (const name of commandSources) {
+  const source = join(COMMAND_SOURCE_DIR, name);
+  const target = join(commandDir, name);
+  if (DRY_RUN) {
+    log(`[dry-run] would copy ${source} -> ${target}`);
+  } else {
+    mkdirSync(commandDir, { recursive: true });
+    copyFileSync(source, target);
+    log(`installed command -> ${target}`);
+  }
+}
+
+if (commandSources.length === 0) {
+  warn(`no commands found in ${COMMAND_SOURCE_DIR}`);
 }
 
 // 3. Apply config changes

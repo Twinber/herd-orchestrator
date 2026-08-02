@@ -45,9 +45,9 @@ Adding or fixing an entry in `src/docs.js` is the only maintenance needed when a
 ## Installation in opencode
 
 The included installer registers the MCP server in opencode's config and copies
-the `/orquestate` command into opencode's command directory — **without breaking
-any existing config** (comments, formatting and unrelated MCP servers are
-preserved).
+**all** commands from `.opencode/command/` (`/orquestate`, `/plan-worktrees`)
+into opencode's command directory — **without breaking any existing config**
+(comments, formatting and unrelated MCP servers are preserved).
 
 1. Clone or copy the project to the target machine:
 
@@ -73,7 +73,7 @@ preserved).
    `mcp.herdr` untouched, and it refuses to touch an unparseable config
    (aborting with nothing changed).
 
-3. Restart opencode. The `herdr_*` tools will be available to agents (shown as `herdr_herdr_*`), and the `/orquestate` command will be available globally.
+3. Restart opencode. The `herdr_*` tools will be available to agents (shown as `herdr_herdr_*`), and the `/orquestate` and `/plan-worktrees` commands will be available globally.
 
 ## Development
 
@@ -102,6 +102,23 @@ The config format and pipeline are documented in
 `.opencode/command/orquestate.md`. Example configs live in `factory/`
 (`config.example.json`, `test-1.json`, `test-blocked.json`).
 
+## Planning with `/plan-worktrees`
+
+`/plan-worktrees` is the companion planning command. It interviews you about a
+feature or fix you want, decomposes it into **parallelizable tasks** (non
+overlapping files, no inter-task dependencies), and writes the factory JSON that
+`/orquestate` consumes directly.
+
+```
+/plan-worktrees  # then answer the interviewer's questions
+/plan-worktrees  Add a station search box and a country filter to the map page
+```
+
+It asks questions via the `question` tool until the repo details and the task
+decomposition are unambiguous, writes the config to
+`<repo>/factory/<date>-<slug>.json`, summarizes the plan, and hands off with
+`/orquestate <file>`.
+
 ## Project layout
 
 ```
@@ -115,7 +132,7 @@ herdr-mcp/
 │   ├── docs.js        # curated docs layer + checkDocCoverage (drift detection)
 │   └── client.js      # JSON-RPC client for the Herdr Unix socket
 ├── .opencode/
-│   └── command/orquestate.md  # /orquestate orchestrator instructions
+│   └── command/          # /orquestate + /plan-worktrees orchestrator/planner commands
 ├── factory/           # example configs consumed by /orquestate
 ├── test/
 │   └── smoke.js       # end-to-end smoke test
