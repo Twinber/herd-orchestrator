@@ -59,6 +59,8 @@ Decompose the request into **independent tasks**. For each task produce:
   told to use their best judgment. Use `{ "answer": "..." }` only when there is
   a factual answer the user already gave that unblocks the task.
 - `max_blocked` — `3` by default.
+- `max_review_rounds` — `3` by default. Max implementation↔review cycles before
+  the task is marked as failed. Increase for complex tasks, decrease for simple.
 
 ### Task independence rules (critical)
 - Tasks MUST NOT touch the same files. If two tasks would edit the same file,
@@ -103,7 +105,8 @@ The exact JSON shape `/orchestrate` expects:
       "title": "Short title",
       "prompt": "Complete, self-contained instructions for the worker.",
       "on_blocked": "continue",
-      "max_blocked": 3
+      "max_blocked": 3,
+      "max_review_rounds": 3
     }
   ]
 }

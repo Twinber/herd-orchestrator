@@ -29,7 +29,8 @@ config shape is:
       "title": "Task title",
       "prompt": "What the worker must implement.",
       "on_blocked": "continue",           // "continue" | { "answer": "..." } | "abort"
-      "max_blocked": 5
+      "max_blocked": 5,
+      "max_review_rounds": 3               // max review→rework cycles (default 3)
     }
   ]
 }
@@ -120,7 +121,7 @@ Rules:
 - Mark the task done or failed accordingly. Keep a copy of each worker's final
   output.
 
-### 3. Cross-review
+### 3. Cross-review (with rework loop)
 For each done task, launch a reviewer in a **fresh pane** in the task's worktree
 workspace. Do NOT reuse the worker's pane: the pane keeps the worker's full
 conversation in its scrollback, which leaks the task instructions into the
@@ -142,8 +143,31 @@ APPROVE or CHANGES_REQUESTED: <comma separated list>
 
 Warm up the reviewer (PONG ping) before the real prompt, same as the worker.
 
+**If the reviewer says CHANGES_REQUESTED**, do NOT merge yet. Enter the rework loop:
+
+1. Read the full reviewer output to extract the list of requested changes.
+2. Send the feedback to the **original worker** (same pane, same agent) via `agent.prompt`:
+
+   ```
+   The reviewer requested changes for <branch>:
+   
+   <list of requested changes from the reviewer>
+   
+   Please fix these issues in the current worktree, run the tests again,
+   and reply with a short summary and the exact line "TASK_COMPLETE" when done.
+   ```
+
+3. Wait for the worker to finish (`idle`/`done`) and verify `TASK_COMPLETE`.
+4. Launch a **new reviewer** in a **fresh pane** (`pane.split` again, new name like `rev-<task>-round2`).
+5. If APPROVE → proceed to integrate.
+6. If CHANGES_REQUESTED again → loop back to step 1.
+
+Stop the loop after `max_review_rounds` (default 3, configurable per issue).
+If the limit is reached, mark the task as `failed: review loop exhausted` and
+report it in the summary. Do NOT merge tasks that exhausted the review loop.
+
 ### 4. Integrate
-- For tasks that completed and were not marked `CHANGES_REQUESTED`, merge on
+- For tasks that reached APPROVE (possibly after rework rounds), merge on
   the base checkout: `git merge --no-ff <branch> -m "Merge <branch>"`.
 - If a merge conflicts, report it and leave the branch; do not force anything.
 
