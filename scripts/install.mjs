@@ -31,7 +31,7 @@ const FULL_MODE = args.includes("--all");
 
 const OPENCODE_GLOBAL_DIR = join(homedir(), ".config", "opencode");
 const OPENCODE_PROJECT_DIR = join(process.env.OPENCODE_PROJECT_CWD || process.cwd(), ".opencode");
-const COMMAND_SOURCE_DIR = join(ROOT, ".opencode", "command");
+const COMMAND_SOURCE_DIR = join(ROOT, "commands");
 
 // --- helpers -------------------------------------------------------------
 

@@ -29,7 +29,7 @@ Tool naming follows `herdr_<method>` (dots become underscores), e.g. `herdr_pane
 ## Installation in opencode
 
 The included installer registers the MCP server in opencode's config and copies
-**all** commands from `.opencode/command/` (`/orchestrate`, `/plan-worktrees`)
+**all** commands from `commands/` (`/orchestrate`, `/plan-worktrees`)
 into opencode's command directory — **without breaking any existing config**
 (comments, formatting and unrelated MCP servers are preserved).
 
@@ -101,7 +101,7 @@ Usage (from any opencode session with the herdr MCP connected):
 ```
 
 The config format and pipeline are documented in
-`.opencode/command/orchestrate.md`. Example configs live in `factory/`
+`commands/orchestrate.md`. Example configs live in `factory/`
 (`config.example.json`, `test-1.json`, `test-blocked.json`).
 
 ## Planning with `/plan-worktrees`
@@ -140,8 +140,7 @@ herdr-mcp/
 │   └── worktree.create.js / worktree.remove.js / worktree.list.js
 ├── src/
 │   └── client.js           # JSON-RPC client for the Herdr Unix socket
-├── .opencode/
-│   └── command/           # /orchestrate + /plan-worktrees commands
+├── commands/              # /orchestrate + /plan-worktrees commands
 ├── factory/              # example configs for /orchestrate
 ├── test/
 │   └── smoke.js           # end-to-end smoke test
