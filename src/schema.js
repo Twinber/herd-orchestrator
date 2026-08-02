@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DEFAULT_CACHE_PATH = join(__dirname, "..", "schema.json");
-const HERDR_BIN = process.env.HERDR_BIN || "herdr";
+const HERDR_BIN = "herdr";
 
 export function loadSchema() {
   return JSON.parse(readFileSync(DEFAULT_CACHE_PATH, "utf8"));
@@ -14,10 +14,6 @@ export function loadSchema() {
 // Export the current API schema from the running herdr server and cache it
 // next to the MCP. Falls back to a previously cached copy if the export fails.
 export function fetchSchema() {
-  const staticPath = process.env.HERDR_SCHEMA;
-  if (staticPath) {
-    return { schema: JSON.parse(readFileSync(staticPath, "utf8")), source: staticPath };
-  }
   try {
     execFileSync(HERDR_BIN, ["api", "schema", "--output", DEFAULT_CACHE_PATH], {
       stdio: ["ignore", "ignore", "pipe"],

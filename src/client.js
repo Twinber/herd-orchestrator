@@ -2,20 +2,15 @@ import { connect } from "node:net";
 import { execFileSync } from "node:child_process";
 
 const DEFAULT_SOCK = "/home/twinber/.config/herdr/herdr.sock";
-const HERDR_BIN = process.env.HERDR_BIN || "herdr";
+const HERDR_BIN = "herdr";
 const DEFAULT_TIMEOUT_MS = 30000;
 
 let resolvedSocket = null;
 
-// Resolve the herdr server socket. Precedence: HERDR_SOCK env override, then
-// `herdr status server --json`, then a well-known default path.
+// Resolve the herdr server socket via `herdr status server --json`, falling
+// back to a well-known default path if discovery fails.
 export function getSocketPath() {
   if (resolvedSocket) return resolvedSocket;
-
-  if (process.env.HERDR_SOCK) {
-    resolvedSocket = process.env.HERDR_SOCK;
-    return resolvedSocket;
-  }
 
   try {
     const out = execFileSync(HERDR_BIN, ["status", "server", "--json"], {

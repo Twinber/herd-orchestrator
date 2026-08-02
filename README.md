@@ -9,8 +9,8 @@ Herdr is a terminal workspace manager for AI coding agents. Its API is defined b
 - **Auto-generated tools** — tools are built from the API schema, not hand-written. When the schema changes, the tool set updates automatically on the next server start.
 - **~90 tools** covering `workspace.*`, `tab.*`, `pane.*`, `agent.*`, `layout.*`, `plugin.*`, `events.*`, `integration.*`, and more.
 - **Dynamic schema export** — on startup the MCP runs `herdr api schema --output <mcp-dir>/schema.json` and caches the schema next to the server. If the export fails, it falls back to the cached copy.
-- **Dynamic socket discovery** — the Herdr socket path is resolved via `herdr status server --json` (override with the `HERDR_SOCK` env var).
-- **Zero-config** — no environment variables required.
+- **Dynamic socket discovery** — the Herdr socket path is resolved automatically via `herdr status server --json`.
+- **Zero-config** — no environment variables or configuration required.
 
 ## How it works
 
@@ -22,7 +22,7 @@ Tool naming follows `herdr_<method>` (dots become underscores), e.g. `herdr_pane
 ## Requirements
 
 - **Node.js 18+**
-- **Herdr** installed and running (the MCP talks to the Herdr server socket and uses the `herdr` CLI to export the schema and discover the socket). The `herdr` binary must be on `PATH` (or set `HERDR_BIN`).
+- **Herdr** installed and running (the MCP talks to the Herdr server socket and uses the `herdr` CLI to export the schema and discover the socket). The `herdr` binary must be on `PATH`.
 - **opencode** (to register the MCP server)
 
 ## Installation in opencode
@@ -53,31 +53,6 @@ Tool naming follows `herdr_<method>` (dots become underscores), e.g. `herdr_pane
    > Adjust the path in `command` to match where you cloned the repo.
 
 3. Restart opencode. The `herdr_*` tools will be available to agents (shown as `herdr_herdr_*`).
-
-## Configuration
-
-No environment variables are required, but these are honored when set:
-
-| Variable        | Purpose                                                        | Default                              |
-| --------------- | -------------------------------------------------------------- | ------------------------------------ |
-| `HERDR_SOCK`    | Override the Herdr server socket path                          | discovered via `herdr status server` |
-| `HERDR_SCHEMA`  | Use a static schema file instead of exporting it at startup    | exported to `<mcp-dir>/schema.json`  |
-| `HERDR_BIN`     | Path to the `herdr` binary                                     | `herdr`                              |
-
-### Using environment variables
-
-If you prefer explicit configuration, set them in the MCP entry:
-
-```jsonc
-"herdr": {
-  "type": "local",
-  "command": ["node", "/home/<YOUR_USER>/herdr-mcp/server.js"],
-  "enabled": true,
-  "environment": {
-    "HERDR_SOCK": "/home/<YOUR_USER>/.config/herdr/herdr.sock"
-  }
-}
-```
 
 ## Development
 
