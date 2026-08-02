@@ -8,7 +8,8 @@
   },
   "scripts": {
     "start": "node server.js",
-    "test": "node test/smoke.js"
+    "test": "node test/smoke.js",
+    "typecheck": "node --check server.js && node --check src/schema.js && node --check src/client.js && node --check src/docs.js"
   },
   "license": "MIT",
   "dependencies": {
