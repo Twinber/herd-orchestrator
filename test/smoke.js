@@ -77,6 +77,9 @@ try {
   results.tabCloseFieldDocs = Object.fromEntries(
     Object.entries(tabClose?.inputSchema?.properties || {}).map(([k, v]) => [k, v.description])
   );
+  results.tabCloseHasWarning = /WARNING:/.test(tabClose?.description || "");
+  results.paneCloseStartsWarning = list.tools.find((t) => t.name === "herdr_pane_close")?.description.startsWith("WARNING:");
+  results.noSocketSuffix = list.tools.every((t) => !/Socket:/.test(t.description || ""));
 
   const paneList = await request("tools/call", {
     name: "herdr_pane_list",

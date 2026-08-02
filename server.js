@@ -24,6 +24,7 @@ const server = new Server(
   {
     name: "herdr",
     version: "0.1.0",
+    socketPath: getSocketPath(),
   },
   {
     capabilities: { tools: {} },
@@ -33,7 +34,7 @@ const server = new Server(
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: tools.map((t) => ({
     name: t.toolName,
-    description: `${t.description}\n\nSocket: ${getSocketPath()}`,
+    description: t.description,
     inputSchema: t.inputSchema,
   })),
 }));

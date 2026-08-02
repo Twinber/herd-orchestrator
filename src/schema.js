@@ -146,6 +146,7 @@ export function buildTools(schema) {
     const doc = DOCS[method];
     let description = doc?.description ?? `Herdr API method \`${method}\`.`;
     if (required.length) description += ` Required args: ${required.join(", ")}.`;
+    if (doc?.warning) description = `WARNING: ${doc.warning} ${description}`;
 
     if (doc?.fields && inputSchema.properties) {
       for (const [field, fieldDoc] of Object.entries(doc.fields)) {

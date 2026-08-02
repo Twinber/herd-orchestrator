@@ -31,6 +31,13 @@ export function getSocketPath() {
 
 export function call(method, params = {}, { timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
   return new Promise((resolve, reject) => {
+    // Blocking tools (wait_for_output, events_wait, agent_prompt...) accept a
+    // server-side timeout_ms. Give the server a chance to honor it instead of
+    // cutting the call short with our own shorter client timeout.
+    if (typeof params.timeout_ms === "number" && params.timeout_ms > timeoutMs) {
+      timeoutMs = params.timeout_ms + 5000;
+    }
+
     const req = {
       id: `mcp:${Date.now()}:${Math.random().toString(36).slice(2, 10)}`,
       method,

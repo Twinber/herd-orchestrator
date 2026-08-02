@@ -10,7 +10,8 @@ Herdr is a terminal workspace manager for AI coding agents. Its API is defined b
 - **~90 tools** covering `workspace.*`, `tab.*`, `pane.*`, `agent.*`, `layout.*`, `plugin.*`, `events.*`, `integration.*`, and more.
 - **Dynamic schema export** — on startup the MCP runs `herdr api schema --output <mcp-dir>/schema.json` and caches the schema next to the server. If the export fails, it falls back to the cached copy.
 - **Dynamic socket discovery** — the Herdr socket path is resolved automatically via `herdr status server --json`.
-- **Curated docs with drift detection** — every tool ships with hand-written descriptions of what it does and what its fields mean, while the *shape* (types, required args, enums) always comes from the live schema. If the schema outgrows the docs, the server warns about it on startup.
+- **Curated docs with drift detection** — every tool ships with hand-written descriptions of what it does and what its fields mean, while the *shape* (types, required args, enums) always comes from the live schema. Destructive tools (`workspace.close`, `pane.close`, `server.stop`, ...) are flagged with a `WARNING:` prefix. If the schema outgrows the docs, the server warns about it on startup.
+- **Auto-timeouts** — calls are capped by a client-side timeout (30s by default), and blocking tools that accept `timeout_ms` are given enough headroom to complete instead of being cut short.
 - **Zero-config** — no environment variables or configuration required.
 
 ## How it works

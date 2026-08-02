@@ -49,6 +49,7 @@ const DOCS = {
   },
   "workspace.close": {
     description: "Close a workspace and all its tabs/panes.",
+    warning: "Destructive: closes the workspace and every tab/pane it contains.",
     fields: { workspace_id: fields.workspace_id },
   },
   "workspace.report_metadata": {
@@ -94,6 +95,7 @@ const DOCS = {
   },
   "tab.close": {
     description: "Close a tab and all its panes.",
+    warning: "Destructive: closes the tab and every pane it contains.",
     fields: { tab_id: fields.tab_id },
   },
 
@@ -182,6 +184,7 @@ const DOCS = {
   },
   "pane.close": {
     description: "Close a pane.",
+    warning: "Destructive: closes the pane and its terminal process.",
     fields: { pane_id: fields.pane_id },
   },
   "pane.neighbor": {
@@ -319,6 +322,7 @@ const DOCS = {
   },
   "integration.uninstall": {
     description: "Uninstall a herdr agent integration.",
+    warning: "Destructive: removes the integration from herdr.",
     fields: { target: "Integration id." },
   },
 
@@ -336,11 +340,13 @@ const DOCS = {
   },
   "worktree.remove": {
     description: "Remove a git worktree and close its workspace.",
+    warning: "Destructive: deletes the worktree checkout and closes its workspace.",
     fields: { workspace_id: "Workspace of the worktree.", force: "Force removal (default false)." },
   },
 
   "server.stop": {
     description: "Stop the herdr server.",
+    warning: "Destructive: stops the whole herdr server. Use with care.",
   },
   "server.reload_config": {
     description: "Reload the herdr config.toml in the running server.",
@@ -353,6 +359,7 @@ const DOCS = {
   },
   "server.live_handoff": {
     description: "Live handoff used during herdr self-update (advanced).",
+    warning: "Dangerous: used during herdr self-update. Do not call manually.",
     fields: { expected_protocol: "Expected protocol version.", expected_version: "Expected version.", import_exe: "Binary to import state from." },
   },
 
@@ -366,6 +373,7 @@ const DOCS = {
   },
   "plugin.unlink": {
     description: "Unlink a plugin.",
+    warning: "Destructive: removes the plugin from the registry.",
     fields: { plugin_id: "Plugin id." },
   },
   "plugin.enable": {
