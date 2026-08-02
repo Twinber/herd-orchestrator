@@ -44,6 +44,11 @@ Adding or fixing an entry in `src/docs.js` is the only maintenance needed when a
 
 ## Installation in opencode
 
+The included installer registers the MCP server in opencode's config and copies
+the `/orquestate` command into opencode's command directory — **without breaking
+any existing config** (comments, formatting and unrelated MCP servers are
+preserved).
+
 1. Clone or copy the project to the target machine:
 
    ```bash
@@ -52,24 +57,23 @@ Adding or fixing an entry in `src/docs.js` is the only maintenance needed when a
    npm install
    ```
 
-2. Register the server in `~/.config/opencode/opencode.jsonc`:
+2. Run the installer:
 
-   ```jsonc
-   {
-     "$schema": "https://opencode.ai/config.json",
-     "mcp": {
-       "herdr": {
-         "type": "local",
-         "command": ["node", "/home/<YOUR_USER>/herdr-mcp/server.js"],
-         "enabled": true
-       }
-     }
-   }
+   ```bash
+   ./install.sh          # install globally (~/.config/opencode)
+   ./install.sh --project # install into the current project's .opencode/
    ```
 
-   > Adjust the path in `command` to match where you cloned the repo.
+   Options:
 
-3. Restart opencode. The `herdr_*` tools will be available to agents (shown as `herdr_herdr_*`).
+   - `--dry-run` — show what would change without writing anything;
+   - `--no-test` — skip the automatic `npm install` + smoke test.
+
+   The installer is idempotent: re-running it leaves an already-registered
+   `mcp.herdr` untouched, and it refuses to touch an unparseable config
+   (aborting with nothing changed).
+
+3. Restart opencode. The `herdr_*` tools will be available to agents (shown as `herdr_herdr_*`), and the `/orquestate` command will be available globally.
 
 ## Development
 
@@ -103,6 +107,9 @@ The config format and pipeline are documented in
 ```
 herdr-mcp/
 ├── server.js          # MCP server entry (stdio transport, tools/list + tools/call)
+├── install.sh         # installer entrypoint (detects node, delegates to scripts/install.mjs)
+├── scripts/
+│   └── install.mjs    # installer: merges mcp.herdr into opencode config, copies /orquestate
 ├── src/
 │   ├── schema.js      # loads/exports the API schema and builds tool definitions
 │   ├── docs.js        # curated docs layer + checkDocCoverage (drift detection)
