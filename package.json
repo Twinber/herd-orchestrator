@@ -1,15 +1,14 @@
 {
-  "name": "herdr-mcp",
+  "name": "herd-orchestrator",
   "version": "0.1.0",
-  "description": "MCP server exposing the Herdr terminal API (JSON Schema) as callable tools",
+  "description": "Multi-agent worktree orchestrator: MCP server for herdr + opencode commands",
   "type": "module",
   "bin": {
-    "herdr-mcp": "server.js"
+    "herd-orchestrator": "server.js"
   },
   "scripts": {
     "start": "node server.js",
-    "test": "node test/smoke.js",
-    "typecheck": "node --check server.js && node --check src/schema.js && node --check src/client.js && node --check src/docs.js"
+    "test": "node test/smoke.js"
   },
   "license": "MIT",
   "dependencies": {

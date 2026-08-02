@@ -64,11 +64,11 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   process.stderr.write(
-    `[herdr-mcp] ready, ${tools.length} tools (hand-crafted mode)\n`
+    `[herd-orchestrator] ready, ${tools.length} tools (hand-crafted mode)\n`
   );
 }
 
 main().catch((err) => {
-  process.stderr.write(`[herdr-mcp] fatal: ${err.stack || err}\n`);
+  process.stderr.write(`[herd-orchestrator] fatal: ${err.stack || err}\n`);
   process.exit(1);
 });

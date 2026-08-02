@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installer for herdr-mcp: registers the MCP server + /orchestrate command in the
+# Installer for herd-orchestrator: registers the MCP server + commands in the
 # user's opencode config without breaking existing settings.
 #
 # Usage:
