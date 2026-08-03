@@ -1,4 +1,4 @@
-# herdr-mcp
+# herd-orchestrator
 
 A Model Context Protocol (MCP) server that exposes **20 hand-crafted tools** from the Herdr terminal API for AI agents — focused exclusively on multi-agent orchestration with git worktrees.
 
@@ -36,8 +36,8 @@ into opencode's command directory — **without breaking any existing config**
 1. Clone or copy the project to the target machine:
 
    ```bash
-   git clone git@github.com:Twinber/herdr-mcp.git
-   cd herdr-mcp
+   git clone git@github.com:Twinber/herd-orchestrator.git
+   cd herd-orchestrator
    npm install
    ```
 
@@ -124,7 +124,7 @@ decomposition are unambiguous, writes the config to
 ## Project layout
 
 ```
-herdr-mcp/
+herd-orchestrator/
 ├── server.js              # MCP entry (stdio transport, tools/list + tools/call)
 ├── install.sh             # installer entrypoint
 ├── scripts/
