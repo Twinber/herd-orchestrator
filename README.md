@@ -4,6 +4,8 @@
 installer that together turn any AI coding agent into a reactive orchestration
 engine for git worktrees.
 
+<video src="assets/demo.mp4" autoplay loop muted playsinline width="100%"></video>
+
 ```
 herd-orchestrator/
 ├── server.js           # MCP server (20 tools)
