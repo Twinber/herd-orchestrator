@@ -1,5 +1,5 @@
 ---
-description: Interview the user to turn a feature request into a parallelizable worktree plan, emit the /orchestrate factory JSON, and hand off.
+description: Interview the user to turn a feature request into a parallelizable worktree plan, emit the /orchestrate plan JSON, and hand off.
 agent: build
 ---
 
@@ -21,7 +21,7 @@ vague). If empty or vague, you interview them.
    run concurrently in separate git worktrees. The tasks must be as independent
    as possible: they should touch different files/areas, and their order must
    not matter.
-4. **Emit the factory JSON** to a file (see "Output file" below).
+4. **Emit the plan JSON** to a file (see "Output file" below).
 5. **Present the plan** to the user in a short human-readable summary and tell
    them to run `/orchestrate <file>`.
 
@@ -34,10 +34,10 @@ vague). If empty or vague, you interview them.
   merge into. Default `main`, but ask (some repos use `master` or `develop`).
 - `repo.gh_repo` — `owner/name` on GitHub, used to open PRs. If there's no
   remote GitHub repo or the user doesn't want PRs, leave it empty string.
-- `socket` — the herdr socket. Default `/home/twinber/.config/herdr/herdr.sock`;
-  ask only if the user mentions a non-default herdr setup.
-- `worktree_base` — base directory for worktrees. Suggest
-  `/tmp/opencode/<repo>-wt` (ask if they prefer another location).
+- `worktree_base` — base directory for worktrees. Default: one level above the
+  repo, named `worktrees.<repo-name>` (e.g. repo `/path/to/my-repo` →
+  `/path/to/worktrees.my-repo`). Leave empty unless the user prefers another
+  location.
 - `git_token` — GitHub token for PR creation. Leave empty; `/orchestrate` falls
   back to `~/.git-credentials`.
 
@@ -45,7 +45,7 @@ vague). If empty or vague, you interview them.
 Decompose the request into **independent tasks**. For each task produce:
 
 - `id` — short kebab-case slug (e.g. `station-search`).
-- `branch` — prefixed branch name, e.g. `tasks/<id>` (use `tasks/` prefix, not `factory/`).
+- `branch` — prefixed branch name, e.g. `tasks/<id>` (use the `tasks/` prefix).
 - `title` — one line.
 - `prompt` — a complete, self-contained instruction for a worker agent that
   has NO context other than the repo at the worktree. Include:
@@ -90,8 +90,7 @@ The exact JSON shape `/orchestrate` expects:
     "base_branch": "main",
     "gh_repo": "owner/repo"
   },
-  "socket": "/home/twinber/.config/herdr/herdr.sock",
-  "worktree_base": "/tmp/opencode/<repo>-wt",
+  "worktree_base": "",   // default: <parent-of-repo>/worktrees.<repo-name>
   "git_token": "",
   "timeouts": {
     "agent_start_ms": 120000,

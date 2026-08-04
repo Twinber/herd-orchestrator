@@ -1,7 +1,8 @@
 import { connect } from "node:net";
 import { execFileSync } from "node:child_process";
+import { homedir } from "node:os";
 
-const DEFAULT_SOCK = "/home/twinber/.config/herdr/herdr.sock";
+const DEFAULT_SOCK = `${homedir()}/.config/herdr/herdr.sock`;
 const HERDR_BIN = "herdr";
 const DEFAULT_TIMEOUT_MS = 30000;
 

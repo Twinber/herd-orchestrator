@@ -22,9 +22,8 @@ herd-orchestrator/
 
 20 hand-crafted tools that expose the Herdr terminal API through the Model
 Context Protocol. No schema auto-generation — each tool is a file with explicit
-input schemas and descriptions. Only orchestration-relevant tools are included
-by default (`worktree.*`, `agent.*`, `pane.*`, `workspace.*`, `tab.*`). Pass
-`--all` to expose the full 89-tool herdr API.
+input schemas and descriptions. The full set is orchestration-relevant
+(`worktree.*`, `agent.*`, `pane.*`, `workspace.*`, `tab.*`).
 
 ### Commands (`commands/`)
 
@@ -44,9 +43,13 @@ configuration. Idempotent, safe with invalid configs, supports `--dry-run`.
 
 ## Requirements
 
-- **Node.js 18+**
-- **Herdr** running (socket discovered via `herdr status server --json`)
-- **opencode** (to use the commands)
+- **Node.js 18+** (only for the MCP server)
+- **git** (worktrees are native git — always required)
+- **opencode** (to use the commands; subagents are used in git-native mode)
+- **Herdr** (optional) — used by the MCP server and, when available, by
+  `/orchestrate`. Without herdr, `/orchestrate` falls back to a **git-native
+  mode** that creates worktrees itself and drives opencode subagents, so the
+  pipeline still works herdr-free.
 
 ## Installation
 
@@ -57,7 +60,7 @@ npm install
 ./install.sh          # global install (~/.config/opencode)
 ```
 
-Options: `--project`, `--all`, `--dry-run`, `--no-test`.
+Options: `--project`, `--dry-run`, `--no-test`.
 
 Restart opencode. The `herdr_*` MCP tools and `/orchestrate` + `/plan-worktrees`
 commands will be available.
@@ -84,22 +87,30 @@ config file with all the details:
 
 ### 2. Orchestrate (`/orchestrate`)
 
-You point the orchestrator at that config. It drives herdr through the MCP
-tools to deploy one opencode agent per worktree **in parallel**:
+You point the orchestrator at that config. It drives the pipeline in one of two
+modes, selected automatically at startup:
 
-```
-worktree.create  →  agent.start  →  agent.prompt  →  agent.get/read/wait
-     │                  │               │                 │
-  Crea worktree     Lance agente     Envía tarea      Monitoriza
-  + workspace       opencode en      al worker        (working/blocked/
-                       el pane                         idle/done)
-```
+- **herdr mode** — when the `herdr_*` MCP tools respond. Deploys one opencode
+  agent per worktree through herdr:
+  ```
+  worktree.create  →  agent.start  →  agent.prompt  →  agent.get/read/wait
+       │                  │               │                 │
+    Create worktree   Launch agent    Send task         Monitor
+    + workspace       opencode in     to the worker     (working/blocked/
+                         the pane                        idle/done)
+  ```
+- **git-native mode** — when herdr isn't available. The orchestrator creates the
+  worktrees itself with `git worktree add` and launches opencode **subagents**
+  with the `task` tool (workers and reviewers). The pipeline phases are the
+  same; only the transport differs:
+  ```
+  git worktree add  →  task (worker)  →  task (reviewer)  →  git merge
+      creates branch     implements in    reviews the diff     integrates
+      + worktree dir     the worktree     (APPROVE / REQUEST)  --no-ff
+  ```
 
-- **Worktrees are created from the base branch** — each worker starts from the
-  same commit, so they can modify the same files without interfering.
-- **Parallel execution** — the orchestrator deploys 3–5 workers concurrently,
-  monitors them all at once, and handles blocked agents by reading the question
-  and replying with the policy answer.
+Worktrees are created from the base branch in both modes — each worker starts
+from the same commit, so they can modify the same files without interfering.
 - **Cross-review loop** — when a worker finishes, a reviewer in a fresh pane
   inspects the diff. If it says `CHANGES_REQUESTED`, the feedback goes back to
   the same worker for fixes, then a new reviewer re-checks. Loop until
@@ -133,7 +144,7 @@ temp-chart: missing LineTouchData). Both were resolved in one rework round.
 
 ```bash
 npm test              # smoke test (MCP handshake + tools/list + tools/call)
-npm run test:tools    # 13 unit tests for the 9 read-only tools
+npm run test:tools    # unit tests for the read-only tools
 ```
 
 ## License
